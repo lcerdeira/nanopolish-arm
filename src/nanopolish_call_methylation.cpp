@@ -139,13 +139,17 @@ static const struct option longopts[] = {
 // Test CpG sites in this read for methylation
 void calculate_methylation_for_read(const OutputHandles& handles,
                                     const ReadDB& read_db,
-                                    const faidx_t* fai,
+                                    const char* fai_file_name,
                                     const bam_hdr_t* hdr,
                                     const bam1_t* record,
                                     size_t read_idx,
                                     int region_start,
                                     int region_end)
 {
+
+    // load reference fai file
+    faidx_t *fai = fai_load(fai_file_name);    
+
     // Load a squiggle read for the mapped read
     std::string read_name = bam_get_qname(record);
     SquiggleRead sr(read_name, read_db);
@@ -324,6 +328,8 @@ void calculate_methylation_for_read(const OutputHandles& handles,
             fprintf(handles.site_writer, "%d\t%d\t%s\n", ss.strands_scored, ss.n_cpg, ss.sequence.c_str());
         }
     }
+
+    fai_destroy(fai);
 }
 
 void parse_call_methylation_options(int argc, char** argv)
@@ -421,7 +427,7 @@ int call_methylation_main(int argc, char** argv)
     // the BamProcessor framework calls the input function with the 
     // bam record, read index, etc passed as parameters
     // bind the other parameters the worker function needs here
-    auto f = std::bind(calculate_methylation_for_read, std::ref(handles), std::ref(read_db), fai, _1, _2, _3, _4, _5);
+    auto f = std::bind(calculate_methylation_for_read, std::ref(handles), std::ref(read_db), opt::genome_file.c_str(), _1, _2, _3, _4, _5);
     BamProcessor processor(opt::bam_file, opt::region, opt::num_threads, opt::batch_size);
     processor.parallel_run(f);
 

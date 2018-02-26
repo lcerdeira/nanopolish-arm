@@ -204,7 +204,7 @@ std::string get_reference_region_ts(const faidx_t* fai, const char* ref_name, in
 
     // faidx_fetch_seq is not threadsafe
     char* cref_seq;
-    #pragma omp critical
+    //#pragma omp critical
     cref_seq = faidx_fetch_seq(fai, ref_name, start, end, fetched_len);
     
     assert(cref_seq != NULL);

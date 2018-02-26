@@ -100,7 +100,7 @@ SquiggleRead::SquiggleRead(const std::string& name, const ReadDB& read_db, const
         // Use the legacy loader for DNA reads from extract, otherwise use the new loader
         if(this->nucleotide_type == SRNT_DNA && is_event_read) {
             try {
-                #pragma omp critical(sr_load_fast5)
+                //#pragma omp critical(sr_load_fast5)
                 {
                     this->f_p = new fast5::File(fast5_path);
                     assert(this->f_p->is_open());
