@@ -294,6 +294,11 @@ bool recalibrate_model(SquiggleRead &sr,
 
         sr.scalings[strand_idx].set4(shift, scale, drift, var);
         recalibrated = true;
+
+        //hm debug
+        //fprintf(stderr, "shift: %.2lf scale: %.2lf var: %.2lf\n",
+                    //shift, scale, var);
+
     }
 
     return recalibrated;

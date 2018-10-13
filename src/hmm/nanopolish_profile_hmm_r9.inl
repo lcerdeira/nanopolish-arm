@@ -338,6 +338,10 @@ inline float profile_hmm_fill_generic_r9(const HMMInputSequence& _sequence,
             uint32_t event_idx = e_start + (row - 1) * data.event_stride;
             uint32_t rank = kmer_ranks[kmer_idx];
             float lp_emission_m = log_probability_match_r9(*data.read, *data.pore_model, rank, event_idx, data.strand);
+            //hm debug
+            //fprintf(stderr,"m_seq %s, event_idx %d, kmer_rank %d, log prob : %f\n",sequence.get_sequence().c_str(),event_idx,rank,lp_emission_m);
+            //fprintf(stderr,"e_start %d, row %d, event_stride %d, block %d, num_block %d\n",e_start,row,data.event_stride,block,num_blocks);
+
             float lp_emission_b = BAD_EVENT_PENALTY;
             
             HMMUpdateScores scores;

@@ -49,6 +49,7 @@ class HMMInputSequence
 
         //
         const std::string& get_sequence() const { return m_seq; }
+        //const std::string& get_rc_sequence() const { return m_rc_seq; } //hm debug
 
         //
         const Alphabet* get_alphabet() const { return m_alphabet; }

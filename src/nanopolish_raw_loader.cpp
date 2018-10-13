@@ -35,6 +35,8 @@ SquiggleScalings estimate_scalings_using_mom(const std::string& sequence,
     for(size_t i = 0; i < n_kmers; ++i) {
         size_t kmer_rank = alphabet->kmer_rank(sequence.substr(i, k).c_str(), k);
         double l = pore_model.get_parameters(kmer_rank).level_mean;
+        //hm debug
+        //fprintf(stderr,"Kmer : %s, kmer_rank : %d , kmer_mean : %f \n",sequence.substr(i, k).c_str(),kmer_rank,l);
         kmer_level_sum += l;
         kmer_level_sq_sum += pow(l, 2.0f);
     }
@@ -54,7 +56,7 @@ SquiggleScalings estimate_scalings_using_mom(const std::string& sequence,
 #if DEBUG_PRINT_STATS
     fprintf(stderr, "event mean: %.2lf kmer mean: %.2lf shift: %.2lf\n", event_level_sum / et.n, kmer_level_sum / n_kmers, out.shift);
     fprintf(stderr, "event sq-mean: %.2lf kmer sq-mean: %.2lf scale: %.2lf\n", event_level_sq_sum / et.n, kmer_level_sq_sum / n_kmers, out.scale);
-    fprintf(stderr, "truth shift: %.2lf scale: %.2lf\n", pore_model.shift, pore_model.scale);
+    //fprintf(stderr, "truth shift: %.2lf scale: %.2lf\n", pore_model.shift, pore_model.scale);
 #endif
     return out;
 }
@@ -76,6 +78,8 @@ std::vector<AlignedPair> adaptive_banded_simple_event_align(SquiggleRead& read, 
     const Alphabet* alphabet = pore_model.pmalphabet;
     size_t n_events = read.events[strand_idx].size();
     size_t n_kmers = sequence.size() - k + 1;
+
+   // fprintf(stderr,"n_kmers : %d\n",n_kmers);
 
     // backtrack markers
     const uint8_t FROM_D = 0;
@@ -250,6 +254,8 @@ std::vector<AlignedPair> adaptive_banded_simple_event_align(SquiggleRead& read, 
             float diag = is_offset_valid(offset_diag) ? bands[band_idx - 2][offset_diag] : -INFINITY;
  
             float lp_emission = log_probability_match_r9(read, pore_model, kmer_rank, event_idx, strand_idx);
+            //hm debug
+            //fprintf(stderr, "lp emiision : %f , event idx %d, kmer rank %d\n", lp_emission,event_idx,kmer_rank);
             float score_d = diag + lp_step + lp_emission;
             float score_u = up + lp_stay + lp_emission;
             float score_l = left + lp_skip;
@@ -330,6 +336,8 @@ std::vector<AlignedPair> adaptive_banded_simple_event_align(SquiggleRead& read, 
         size_t kmer_rank = alphabet->kmer_rank(sequence.substr(curr_kmer_idx, k).c_str(), k);
         sum_emission += log_probability_match_r9(read, pore_model, kmer_rank, curr_event_idx, strand_idx);
         n_aligned_events += 1;
+        //fprintf(stderr,"sum_emission %f, n_aligned_events %f\n",sum_emission,n_aligned_events);
+
 
         int band_idx = event_kmer_to_band(curr_event_idx, curr_kmer_idx);
         int offset = band_event_to_offset(band_idx, curr_event_idx);
@@ -353,6 +361,10 @@ std::vector<AlignedPair> adaptive_banded_simple_event_align(SquiggleRead& read, 
     
     // QC results
     double avg_log_emission = sum_emission / n_aligned_events;
+    
+    //hm debug
+    //fprintf(stderr,"sum_emission %f, n_aligned_events %f, avg_log_emission %f\n",sum_emission,n_aligned_events,avg_log_emission);
+
     bool spanned = out.front().ref_pos == 0 && out.back().ref_pos == n_kmers - 1;
     
     bool failed = false;

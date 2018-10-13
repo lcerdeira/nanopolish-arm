@@ -27,6 +27,13 @@ void profile_hmm_forward_initialize_r9(FloatMatrix& fm)
 
 float profile_hmm_score_r9(const HMMInputSequence& sequence, const HMMInputData& data, const uint32_t flags)
 {
+
+    //hm debug
+    //fprintf(stderr,"m_seq : %s\n",sequence.get_sequence().c_str());
+    //fprintf(stderr,"m_rc_seq : %s\n",sequence.get_rc_sequence().c_str());
+    //fprintf(stderr,"event_start_idx %d, event_stop_idx %d, event_stride %d, rc %d\n",data.event_start_idx,data.event_stop_idx,data.event_stride,data.rc);
+
+
     const uint32_t k = data.pore_model->k;
     uint32_t n_kmers = sequence.length() - k + 1;
 
