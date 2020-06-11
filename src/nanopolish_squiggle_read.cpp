@@ -14,6 +14,7 @@
 #include "nanopolish_extract.h"
 #include "nanopolish_raw_loader.h"
 #include "nanopolish_fast5_io.h"
+#include "misc.h"
 
 extern "C" {
 #include "event_detection.h"
@@ -355,7 +356,9 @@ void SquiggleRead::load_from_raw(hid_t hdf5_file, const uint32_t flags)
     free(et.event);
 
     // align events to the basecalled read
+    double realtime0 = realtime();
     std::vector<AlignedPair> event_alignment = adaptive_banded_simple_event_align(*this, *this->base_model[strand_idx], read_sequence);
+    fprintf(stderr, "ABEA-time \t%f\n", realtime() - realtime0);
 
     // transform alignment into the base-to-event map
     if(event_alignment.size() > 0) {
