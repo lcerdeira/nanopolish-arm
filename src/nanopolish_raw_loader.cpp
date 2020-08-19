@@ -149,7 +149,7 @@ std::vector<EventKmerPosterior> guide_banded_simple_posterior(SquiggleRead& read
                                                                       const PoreModel& pore_model,
                                                                       const Haplotype& haplotype,
                                                                       const EventAlignmentRecord& event_align_record,
-                                                                      const AdaBandedParameters parameters)
+                                                                      const AdaBandedParameters parameters, char *success)
 {
     size_t strand_idx = 0;
     size_t k = pore_model.k;
@@ -160,6 +160,7 @@ std::vector<EventKmerPosterior> guide_banded_simple_posterior(SquiggleRead& read
     EventBandedForward ebf;
     ebf.initialize(read, haplotype, event_align_record, pore_model.k, strand_idx, parameters);
     if(!ebf.are_bands_continuous()) {
+        *success=0;
         return assignment;
     }
 
@@ -169,7 +170,7 @@ std::vector<EventKmerPosterior> guide_banded_simple_posterior(SquiggleRead& read
     EventBandedForward ebb;
     ebb.initialize(read, haplotype, event_align_record, pore_model.k, strand_idx, parameters);
     assert(ebb.are_bands_continuous()); // if forward is OK backwards must be too
-    generic_banded_simple_hmm_backwards(read, pore_model, haplotype.get_sequence(), parameters, ebb);
+    *success= generic_banded_simple_hmm_backwards(read, pore_model, haplotype.get_sequence(), parameters, ebb);
 
     float f = ebf.get_by_event_kmer(ebf.get_num_events(), ebf.get_num_kmers());
     float b = ebb.get_by_event_kmer(-1, -1);

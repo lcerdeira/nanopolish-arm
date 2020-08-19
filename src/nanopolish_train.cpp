@@ -139,7 +139,7 @@ namespace opt
     static std::string output_directory;
     static std::string initial_model_type = "ONT";
     static std::string trained_model_type = "reftrained";
-    static std::string bedmethyl_filename; 
+    static std::string bedmethyl_filename;
     static TrainingTarget training_target = TT_METHYLATED_KMERS;
     static bool write_models = true;
     static bool output_scores = false;
@@ -352,7 +352,7 @@ std::string infer_read_sequence_from_variants_and_methylation(SquiggleRead& sr,
     int strand_idx = 0;
     uint32_t hmm_flags = HAF_ALLOW_PRE_CLIP | HAF_ALLOW_POST_CLIP;
 
-    // 
+    //
     std::string ref_name = hdr->target_name[record->core.tid];
     int ref_start_pos = record->core.pos;
     int ref_end_pos = bam_endpos(record);
@@ -363,7 +363,7 @@ std::string infer_read_sequence_from_variants_and_methylation(SquiggleRead& sr,
     std::transform(reference_seq.begin(), reference_seq.end(), reference_seq.begin(), ::toupper);
 
     std::string read_outseq = reference_seq;
-    
+
     // Search the variant collection for the index of the first/last variants to phase
     BedMethylRecord lower_search;
     lower_search.ref_name = ref_name;
@@ -374,9 +374,9 @@ std::string infer_read_sequence_from_variants_and_methylation(SquiggleRead& sr,
     upper_search.ref_name = ref_name;
     upper_search.ref_start_position = ref_end_pos;
     auto upper_iter = std::upper_bound(methylation_records.begin(), methylation_records.end(), upper_search, sortBedMethylByPosition);
-    
+
     if(opt::verbose >= 1) {
-        fprintf(stderr, "Inferring read %s %s:%u-%u %zu\n", 
+        fprintf(stderr, "Inferring read %s %s:%u-%u %zu\n",
             sr.read_name.c_str(), ref_name.c_str(), ref_start_pos, ref_end_pos, upper_iter - lower_iter);
     }
 
@@ -459,7 +459,7 @@ std::string infer_read_sequence_from_variants_and_methylation(SquiggleRead& sr,
             char q_char = (int)q_score + 33;
 
             /*
-            fprintf(stderr, "\t%s prior meth: %.2lf score: %.2lf %.2lf %c p_wrong: %.3lf Q: %d QC: %c\n", 
+            fprintf(stderr, "\t%s prior meth: %.2lf score: %.2lf %.2lf %c p_wrong: %.3lf Q: %d QC: %c\n",
                 v.key().c_str(), prior_methylated, ref_score, alt_score, call, log_p_wrong, (int)q_score, q_char);
             */
 
@@ -528,7 +528,7 @@ void add_aligned_events_for_read(const ReadDB& read_db,
     if(alignment_end_pos - alignment_start_pos < 1000) {
         return;
     }
-    
+
     // get the pore model we want for the type of training data
     const PoreModel* pore_model = sr.get_model(strand_idx, train_alphabet_ptr->get_name());
 
@@ -554,10 +554,13 @@ void add_aligned_events_for_read(const ReadDB& read_db,
     Haplotype reference_haplotype(ref_name, alignment_start_pos, reference_seq);
     SequenceAlignmentRecord seq_align_record(record);
     EventAlignmentRecord event_align_record(&sr, strand_idx, seq_align_record);
-    
+
+    char ret_val=10;
     // calculate event->kmer posteriors
-    std::vector<EventKmerPosterior> state_assignments = 
-        guide_banded_simple_posterior(sr, *pore_model, reference_haplotype, event_align_record, alignment_parameters);
+    std::vector<EventKmerPosterior> state_assignments =
+        guide_banded_simple_posterior(sr, *pore_model, reference_haplotype, event_align_record, alignment_parameters,&ret_val);
+
+    assert(ret_val==0 || ret_val==-1 );
 
     size_t edge_ignore = 50;
     if(state_assignments.size() < 2*edge_ignore) {
@@ -566,7 +569,7 @@ void add_aligned_events_for_read(const ReadDB& read_db,
 
     for(size_t i = edge_ignore; i < state_assignments.size() - edge_ignore; ++i) {
         const auto& ekp = state_assignments[i];
-        
+
         size_t kmer_idx = ekp.kmer_idx;
         size_t event_idx = ekp.event_idx;
         double log_posterior = ekp.log_posterior;
@@ -684,7 +687,7 @@ TrainingResult train_model_from_events(const PoreModel& current_model,
             float major_weight = is_m_kmer ? 1 - incomplete_methylation_rate : 1.0f;
             mixture.log_weights.push_back(log(major_weight));
             mixture.params.push_back(current_model.get_parameters(ki));
-            
+
             /*
             if(is_m_kmer) {
                 // add second unmethylated component
@@ -867,7 +870,7 @@ int train_main(int argc, char** argv)
 
         bedmethyl_records = read_bedmethyl_for_region(opt::bedmethyl_filename, contig, start_base, end_base);
         fprintf(stderr, "[train] read %zu methylation records in region\n", bedmethyl_records.size());
-        
+
         // Sort variants by reference coordinate
         std::sort(bedmethyl_records.begin(), bedmethyl_records.end(), sortBedMethylByPosition);
     }
@@ -886,4 +889,3 @@ int train_main(int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
-

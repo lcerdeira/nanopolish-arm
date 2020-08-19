@@ -64,7 +64,7 @@ std::vector<EventKmerPosterior> guide_banded_simple_posterior(SquiggleRead& read
                                                                       const PoreModel& pore_model,
                                                                       const Haplotype& haplotype,
                                                                       const EventAlignmentRecord& event_align_record,
-                                                                      const AdaBandedParameters parameters);
+                                                                      const AdaBandedParameters parameters,char *a);
 
 #include "nanopolish_raw_loader.inl"
 
